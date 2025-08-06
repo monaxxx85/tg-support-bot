@@ -5,6 +5,9 @@ use App\Http\Middleware\LogTelegramHandler;
 use DefStudio\Telegraph\Telegraph;
 
 return [
+
+    'support_group_id' => env('TELEGRAM_SUPPORT_GROUP_ID'),
+
     /*
      * Telegram api base url, it can be overridden
      * for self-hosted servers
@@ -30,7 +33,7 @@ return [
          *
          * For reference, see https://docs.defstudio.it/telegraph/webhooks/overview
          */
-        'handler' => App\Telegram\Handler::class,
+        'handler' => \App\Telegram\Handlers\Handler::class,
 
         /*
          * Middleware to be applied to the webhook route

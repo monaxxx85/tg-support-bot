@@ -2,28 +2,30 @@
 
 namespace App\Telegram\Services;
 
+use App\Telegram\Contracts\MessageTypeResolverInterface;
 use DefStudio\Telegraph\DTO\Chat;
 use DefStudio\Telegraph\DTO\Message;
 
-class MessageService
+class MessageTypeResolver implements MessageTypeResolverInterface
 {
     public function __construct(
-        private int $supportGroupId
+        private readonly int $supportGroupId
     )
     {
     }
 
-    public function isPrivate($message): bool
+    public function isPrivate(Message $message): bool
     {
-        return $message?->chat()?->type() === Chat::TYPE_PRIVATE;
+        return $message->chat()?->type() === Chat::TYPE_PRIVATE;
     }
 
-    public function isReplyTopicChat($message): bool
+    public function isReplyInTopic(Message $message): bool
     {
-        return
-            $message?->replyToMessage() &&
-            $message->chat()->id() == $this->supportGroupId;
+        $chat = $message->chat();
 
-            //env('TELEGRAM_SUPPORT_GROUP_ID');
+        return $message->replyToMessage()
+            && $chat
+            && $chat->id() === $this->supportGroupId;
     }
+
 }

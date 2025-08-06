@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Telegram;
+namespace App\Telegram\Handlers;
 
 use App\Telegram\Contracts\MessageTypeResolverInterface;
 use App\Telegram\Contracts\TelegramClientInterface;
@@ -15,10 +15,10 @@ class Handler extends EmptyWebhookHandler
 {
     public function __construct(
         protected MessageTypeResolverInterface $resolver,
-        protected SupportChatService $chatService,
-        protected TelegramClientInterface $telegramClient,
-        private int $supportGroupId
-    ) {
+        protected SupportChatService           $chatService,
+        protected TelegramClientInterface      $telegramClient,
+    )
+    {
         parent::__construct();
     }
 
@@ -46,8 +46,7 @@ class Handler extends EmptyWebhookHandler
 
     protected function handlePrivateMessage(): void
     {
-        $toChat = Telegraph::chat($this->supportGroupId);
-        $this->chatService->handleUserMessage($this->message, $toChat);
+        $this->chatService->handleUserMessage($this->message);
     }
 
 

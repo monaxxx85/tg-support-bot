@@ -2,41 +2,92 @@
 
 namespace App\Telegram\DTO;
 
+use Carbon\Carbon;
 
-class UserSession
+class ChatSession
 {
-
-    private int $id;
-    private int $topicId;
-
-    private bool $isBot;
-    private string $firstName;
-    private string $lastName;
-    private string $username;
-    private string $languageCode;
-    private bool $isPremium;
-
+    public function __construct(
+        public readonly int $telegram_user_id,
+        public int          $topicId,
+        public string       $firstName,
+        public string       $lastName,
+        public ?string      $username,
+        public bool         $isBot,
+        public string       $languageCode,
+        public bool         $isPremium,
+        public string       $created_at,
+        public ?string      $closed_at = null,
+        public ?string      $closed_reason = null,
+        public bool         $is_banned = false,
+        public string       $last_message_from = 'user', // 'user' | 'support'
+    ){}
 
     /**
-     * @param array{id:int, is_bot?:bool, first_name?:string, last_name?:string, username?:string, language_code?:string, is_premium?:bool} $data
+     * Проверяет, активна ли сессия
      */
-    public static function fromArray(array $data): UserSession
+    public function isActive(): bool
     {
-        $user = new self();
+        return $this->closed_at === null && !$this->is_banned;
+    }
 
-        $user->topicId = $data['topicId'];
+    /**
+     * Проверяет, заблокирован ли пользователь
+     */
+    public function isBanned(): bool
+    {
+        return $this->is_banned;
+    }
 
-        $user->id = $data['id'];
-        $user->isBot = $data['is_bot'] ?? false;
+    /**
+     * Возвращает время жизни сессии в минутах
+     */
+    public function durationInMinutes(): int
+    {
+        return Carbon::parse($this->created_at)
+            ->diffInMinutes(Carbon::parse($this->closed_at ?? now()));
+    }
 
-        $user->firstName = $data['first_name'] ?? '';
-        $user->lastName = $data['last_name'] ?? '';
-        $user->username = $data['username'] ?? '';
-        $user->languageCode = $data['language_code'] ?? '';
-        $user->isPremium = $data['is_premium'] ?? false;
+    /**
+     * Создает новый экземпляр на основе массива
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            telegram_user_id: $data['telegram_user_id'],
+            topicId: $data['topicId'],
+            firstName: $data['firstName'] ?? '',
+            lastName: $data['lastName'] ?? '',
+            username: $data['username'] ?? null,
+            isBot: $data['isBot'] ?? false,
+            languageCode: $data['languageCode'] ?? 'en',
+            isPremium: $data['isPremium'] ?? false,
+            is_banned: $data['is_banned'] ?? false,
+            last_message_from: $data['last_message_from'] ?? 'user',
+            created_at: $data['created_at'] ?? now()->toIso8601String(),
+            closed_at: $data['closed_at'] ?? null,
+            closed_reason: $data['closed_reason'] ?? null,
+        );
+    }
 
-        return $user;
+    /**
+     * Конвертирует сессию в массив для хранения
+     */
+    public function toArray(): array
+    {
+        return [
+            'telegram_user_id' => $this->telegram_user_id,
+            'topicId' => $this->topicId,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
+            'username' => $this->username,
+            'isBot' => $this->isBot,
+            'languageCode' => $this->languageCode,
+            'isPremium' => $this->isPremium,
+            'is_banned' => $this->is_banned,
+            'last_message_from' => $this->last_message_from,
+            'created_at' => $this->created_at,
+            'closed_at' => $this->closed_at,
+            'closed_reason' => $this->closed_reason,
+        ];
     }
 }
-
-

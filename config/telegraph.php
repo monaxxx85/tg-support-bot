@@ -7,6 +7,7 @@ use DefStudio\Telegraph\Telegraph;
 return [
 
     'support_group_id' => env('TELEGRAM_SUPPORT_GROUP_ID'),
+    'use_queue' => env('TELEGRAM_USE_QUEUE', false),
 
     /*
      * Telegram api base url, it can be overridden
@@ -38,7 +39,7 @@ return [
         /*
          * Middleware to be applied to the webhook route
          */
-        'middleware' => [LogTelegramHandler::class],
+        'middleware' => [],
 
         /*
          * Sets a custom domain when registering a webhook. This will allow a local telegram bot api server

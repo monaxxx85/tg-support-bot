@@ -108,10 +108,10 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
         }
 
         // Удаляем из основного хранилища
-        $this->storage()->delete(self::USER_PREFIX . $userId);
+        $this->storage()->forget(self::USER_PREFIX . $userId);
 
         if ($session->topicId > 0) {
-            $this->storage()->delete(self::TOPIC_PREFIX . $session->topicId);
+            $this->storage()-forget(self::TOPIC_PREFIX . $session->topicId);
         }
 
         // Удаляем из списка всех сессий

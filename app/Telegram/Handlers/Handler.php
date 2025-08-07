@@ -5,7 +5,6 @@ namespace App\Telegram\Handlers;
 use App\Telegram\Contracts\MessageTypeResolverInterface;
 use App\Telegram\Contracts\TelegramClientInterface;
 use App\Telegram\Services\SupportChatService;
-use DefStudio\Telegraph\Facades\Telegraph;
 use DefStudio\Telegraph\Handlers\EmptyWebhookHandler;
 use DefStudio\Telegraph\Models\TelegraphBot;
 use Illuminate\Http\Request;
@@ -31,16 +30,12 @@ class Handler extends EmptyWebhookHandler
 
     protected function handleChatMessage(Stringable $text): void
     {
-        if ($text->isEmpty()) {
-            return;
-        }
 
         match (true) {
             $this->resolver->isPrivate($this->message) => $this->handlePrivateMessage(),
             $this->resolver->isReplyInTopic($this->message) => $this->handleSupportReply(),
             default => null
         };
-
     }
 
 

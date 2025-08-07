@@ -21,7 +21,7 @@ class UserPresenter
             "👤 {$user->firstName()} {$user->lastName()}",
             "📱 @" . ($user->username() ?? ' нет username'),
             "🆔 {$user->id()}",
-            "Is bot = " . $user->isBot() ? "true" : "false"
+            "Is bot = " . ($user->isBot() ? "true" : "false")
         ];
 
         return implode("\n", $userInfo);

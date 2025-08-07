@@ -35,9 +35,9 @@ class SupportChatService
             $this->sessionRepository->saveSession($session);
         }
 
-        $this->telegramClient->forwardMessage(
+        $this->telegramClient->copyMessage(
             $this->supportGroupId,
-            $message->from()->id(),
+            $message->chat()->id(),
             $message->id(),
             $session->topicId
         );
@@ -47,11 +47,13 @@ class SupportChatService
     public function handleSupportReply(Message $message): void
     {
         $topicId = $message->replyToMessage()?->messageThreadId();
+        if (!$topicId) return;
+
         $session = $this->sessionRepository->findByTopic($topicId);
 
-        $this->telegramClient->forwardMessage(
+        $this->telegramClient->copyMessage(
             $session->telegram_user_id,
-            $this->supportGroupId,
+            $message->chat()->id(),
             $message->id()
         );
 

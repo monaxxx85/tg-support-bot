@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TelegramClientInterface::class, function ($app) {
             $client = new TelegraphClient();
-            $client = new LoggingTelegramClient($client, 'support-bot');
+//            $client = new LoggingTelegramClient($client, 'support-bot');
             return $client;
         });
 

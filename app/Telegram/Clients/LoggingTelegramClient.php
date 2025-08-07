@@ -3,6 +3,7 @@
 namespace App\Telegram\Clients;
 
 use App\Telegram\Contracts\TelegramClientInterface;
+use DefStudio\Telegraph\DTO\Message;
 use Illuminate\Support\Facades\Log;
 
 class LoggingTelegramClient implements TelegramClientInterface
@@ -35,6 +36,11 @@ class LoggingTelegramClient implements TelegramClientInterface
         }
     }
 
+    public function copyMessage(Message $message, int $chatId, ?string $prefix = '', ?int $threadId = null): void
+    {
+        $this->sendMessage($chatId, $message->text(), $threadId);
+    }
+
     public function createForumTopic(int $chatId, string $name, ?string $emoji = null): int
     {
         Log::info("Creating Telegram topic", [
@@ -53,58 +59,6 @@ class LoggingTelegramClient implements TelegramClientInterface
             return $topicId;
         } catch (\Exception $e) {
             Log::error("Failed to create topic", [
-                'context' => $this->context,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
-        }
-    }
-
-    public function forwardMessage(int $toChatId, int $fromChatId, int $messageId, ?int $threadId = null): void
-    {
-
-        Log::info("Forward message in Telegram", [
-            'context' => $this->context,
-            'toChatId' => $toChatId,
-            'fromChatId' => $fromChatId,
-            'messageId' => $messageId,
-            'threadId' => $threadId,
-        ]);
-
-        try {
-            $this->client->forwardMessage($toChatId, $fromChatId, $messageId, $threadId);
-            Log::info("Forward message end", [
-                'context' => $this->context
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Failed to forward message", [
-                'context' => $this->context,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
-        }
-    }
-
-    public function forwardMessageWithPrefix(int $toChatId, int $fromChatId, int $messageId, string $prefix, ?int $threadId = null): void
-    {
-        Log::info("Forward message with prefix", [
-            'context' => $this->context,
-            'toChatId' => $toChatId,
-            'fromChatId' => $fromChatId,
-            'messageId' => $messageId,
-            'prefix' => $prefix,
-            'threadId' => $threadId,
-        ]);
-
-        try {
-            $this->client->forwardMessageWithPrefix($toChatId, $fromChatId, $messageId, $prefix, $threadId);
-            Log::info("Copying message with prefix end", [
-                'context' => $this->context
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Failed to forward message with prefix", [
                 'context' => $this->context,
                 'error' => $e->getMessage()
             ]);

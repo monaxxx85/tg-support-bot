@@ -10,9 +10,7 @@ class MessageTypeResolver implements MessageTypeResolverInterface
 {
     public function __construct(
         private readonly int $supportGroupId
-    )
-    {
-    }
+    ){}
 
     public function isPrivate(Message $message): bool
     {
@@ -21,11 +19,8 @@ class MessageTypeResolver implements MessageTypeResolverInterface
 
     public function isReplyInTopic(Message $message): bool
     {
-        $chat = $message->chat();
-
         return $message->replyToMessage()
-            && $chat
-            && $chat->id() === $this->supportGroupId;
+            && $message->chat()?->id() == $this->supportGroupId;
     }
 
 }

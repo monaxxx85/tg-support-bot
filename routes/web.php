@@ -11,10 +11,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test/{id}', function ($id) {
-    echo "ID = {$id}";
-});
-
 Route::get('/all', function () {
     $store = new SupportChatSessionRepository();
     dd($store->getAllActiveSessions());

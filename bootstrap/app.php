@@ -1,5 +1,7 @@
 <?php
 
+use App\Telegram\Formatters\HtmlFormatter;
+use App\Telegram\Presenters\ErrorPresenter;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,13 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->report(function (Throwable $e) {
 
-            $message = [
-                $e->getMessage(),
-                '',
-                'File: ' . $e->getFile() .' ('. $e->getLine().')',
-            ];
+            $errorPresenter = new ErrorPresenter($e);
+            $message = (new HtmlFormatter())->render($errorPresenter);
 
-            Telegraph::message(implode("\n", $message))->send();
+            Telegraph::chat(config('telegraph.support_group_id'))
+                 ->message($message)
+                 ->send();
         });
 
     })->create();

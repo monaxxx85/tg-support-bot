@@ -3,28 +3,36 @@
 namespace App\Telegram\Presenters;
 
 use DefStudio\Telegraph\DTO\User;
+use App\Telegram\Presenters\BasePresenter;
 
-class UserPresenter
+class UserPresenter extends BasePresenter
 {
-    public function formatTopicName(User $user): string
+    public function __construct(private readonly User $user)
     {
-        return match (true) {
-            !empty($user->firstName() && $user->lastName()) => "{$user->firstName()} {$user->lastName()}",
-            !empty($user->username()) => "@{$user->username()}",
-            default => "ID: " . (string)$user->id()
-        };
     }
 
-    public function contact(User $user): string
+    public function topicName(): string
     {
-        $userInfo = [
-            "👤 {$user->firstName()} {$user->lastName()}",
-            "📱 @" . ($user->username() ?? ' нет username'),
-            "🆔 {$user->id()}",
-            "Is bot = " . ($user->isBot() ? "true" : "false")
-        ];
+        if ($this->user->firstName() && $this->user->lastName()) {
+            return trim($this->user->firstName() . ' ' . $this->user->lastName());
+        }
 
-        return implode("\n", $userInfo);
+        if ($this->user->username()) {
+            return '@' . $this->user->username();
+        }
+
+        return "ID: {$this->user->id()}";
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'full_name' => trim($this->user->firstName() . ' ' . $this->user->lastName()),
+            'name' => trim($this->user->firstName()),
+            'username' => $this->user->username(),
+            'id' => (string) $this->user->id(),
+            'is_bot' => $this->user->isBot(),
+        ];
     }
 
 }

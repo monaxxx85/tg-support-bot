@@ -3,24 +3,28 @@
 namespace App\Telegram\DTO;
 
 use Carbon\Carbon;
+use App\Telegram\Enum\ChatStatus;
+use DefStudio\Telegraph\DTO\User;
 
 class ChatSession
 {
     public function __construct(
+        public ChatStatus $status,
         public readonly int $telegram_user_id,
-        public int          $topicId,
-        public string       $firstName,
-        public string       $lastName,
-        public ?string      $username,
-        public bool         $isBot,
-        public string       $languageCode,
-        public bool         $isPremium,
-        public string       $created_at,
-        public ?string      $closed_at = null,
-        public ?string      $closed_reason = null,
-        public bool         $is_banned = false,
-        public string       $last_message_from = 'user', // 'user' | 'support'
-    ){}
+        public int $topicId,
+        public string $firstName,
+        public string $lastName,
+        public ?string $username,
+        public bool $isBot,
+        public string $languageCode,
+        public bool $isPremium,
+        public string $created_at,
+        public ?string $closed_at = null,
+        public ?string $closed_reason = null,
+        public bool $is_banned = false,
+        public string $last_message_from = 'user', // 'user' | 'support'
+    ) {
+    }
 
     /**
      * Проверяет, активна ли сессия
@@ -47,12 +51,26 @@ class ChatSession
             ->diffInMinutes(Carbon::parse($this->closed_at ?? now()));
     }
 
+    public function getUser(): User
+    {
+        return User::fromArray([
+            'id' => $this->telegram_user_id,
+            'is_bot' => $this->isBot,
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'username' => $this->username,
+            'language_code' => $this->languageCode,
+            'is_premium' => $this->isPremium,
+        ]);
+    }
+
     /**
      * Создает новый экземпляр на основе массива
      */
     public static function fromArray(array $data): self
     {
         return new self(
+            status: ChatStatus::from($data['status'] ?? "new"),
             telegram_user_id: $data['telegram_user_id'],
             topicId: $data['topicId'],
             firstName: $data['firstName'] ?? '',
@@ -75,6 +93,7 @@ class ChatSession
     public function toArray(): array
     {
         return [
+            'status' => $this->status->value,
             'telegram_user_id' => $this->telegram_user_id,
             'topicId' => $this->topicId,
             'firstName' => $this->firstName,

@@ -1,9 +1,6 @@
 <?php
 
 
-use App\Http\Middleware\LogTelegramHandler;
-use DefStudio\Telegraph\Telegraph;
-
 return [
 
     'support_group_id' => env('TELEGRAM_SUPPORT_GROUP_ID'),
@@ -19,7 +16,7 @@ return [
      * Sets Telegraph messages default parse mode
      * allowed values: html|markdown|MarkdownV2
      */
-    'default_parse_mode' => Telegraph::PARSE_HTML,
+    'default_parse_mode' => \DefStudio\Telegraph\Telegraph::PARSE_HTML,
 
     'webhook' => [
         /*
@@ -39,7 +36,7 @@ return [
         /*
          * Middleware to be applied to the webhook route
          */
-        'middleware' => [],
+        'middleware' => [\App\Http\Middleware\LogTelegramHandler::class],
 
         /*
          * Sets a custom domain when registering a webhook. This will allow a local telegram bot api server
@@ -211,7 +208,7 @@ return [
          *
          * Default is `/`
          */
-        'start_with' => ['/'],
+        'start_with' => ['/','!','.'],
     ],
 
     'payments' => [

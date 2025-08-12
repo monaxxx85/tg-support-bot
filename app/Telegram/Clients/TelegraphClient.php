@@ -3,19 +3,25 @@
 namespace App\Telegram\Clients;
 
 use App\Telegram\Contracts\TelegramClientInterface;
-use DefStudio\Telegraph\DTO\Message;
 use DefStudio\Telegraph\Facades\Telegraph;
+use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;
 
 class TelegraphClient implements TelegramClientInterface
 {
-
     protected bool $useQueue;
 
     public function __construct(bool $useQueue = null)
     {
-        $this->useQueue = $useQueue ?? config('telegraph.use_queue', true);
+        $this->useQueue = $useQueue ?? config('telegraph.use_queue');
     }
+
+    public function setQueue(bool $queue): TelegramClientInterface
+    {
+        $this->useQueue = $queue;
+        return $this;
+    }
+
 
     /**
      * @param int $chatId
@@ -24,19 +30,29 @@ class TelegraphClient implements TelegramClientInterface
      * @return void
      * @throws \RuntimeException
      */
-    public function sendMessage(int $chatId, string $text, ?int $threadId = null): void
+    public function sendMessage(int $chatId, string $text, ?int $threadId = null, Keyboard|array $keyboard = null): void
     {
         $chat = Telegraph::chat($chatId);
 
         if ($threadId)
             $chat = $chat->inThread($threadId);
 
+        $chat = $chat->message($text);
+
+        if ($keyboard !== null) {
+            if (is_array($keyboard))
+                $chat = $chat->keyboard([$keyboard]);
+            if($keyboard instanceof Keyboard){
+                 $chat = $chat->keyboard($keyboard);
+            }
+        }
+
         if ($this->useQueue) {
             $chat->dispatch();
 
         } else {
 
-            $response = $chat->message($text)->send();
+            $response = $chat->send();
 
             if (!$response->ok()) {
                 Log::error("Telegram send failed", [
@@ -61,14 +77,18 @@ class TelegraphClient implements TelegramClientInterface
         if ($threadId)
             $chat = $chat->inThread($threadId);
 
-        $response = $chat->send();
+        if ($this->useQueue) {
+            $chat->dispatch();
 
-        Log::info('Ответ API:', ['response' => $response]);
+        } else {
 
-        if (!$response->ok()) {
-            throw new \RuntimeException(
-                "Failed to forward message: " . $response->json('description')
-            );
+            $response = $chat->send();
+
+            if (!$response->ok()) {
+                throw new \RuntimeException(
+                    "Failed to forward message: " . $response->json('description')
+                );
+            }
         }
     }
 
@@ -93,27 +113,42 @@ class TelegraphClient implements TelegramClientInterface
 
     public function editForumTopic(int $chatId, int $threadId, ?string $name, ?string $emoji = null): void
     {
-        $response = Telegraph::chat($chatId)
+        $chat = Telegraph::chat($chatId)
             ->editForumTopic($threadId, $name, $emoji)
-            ->send();
+            ->silent();
 
-        if (!$response->ok()) {
-            throw new \RuntimeException(
-                "Failed to delete forum topic: " . $response->json('description')
-            );
+        if ($this->useQueue) {
+            $chat->dispatch();
+
+        } else {
+
+            $response = $chat->send();
+
+            if (!$response->ok()) {
+                throw new \RuntimeException(
+                    "Failed to delete forum topic: " . $response->json('description')
+                );
+            }
         }
     }
 
     public function deleteForumTopic(int $chatId, int $topicId): void
     {
-        $response = Telegraph::chat($chatId)
-            ->deleteForumTopic($topicId)
-            ->send();
+        $chat = Telegraph::chat($chatId)
+            ->deleteForumTopic($topicId);
 
-        if (!$response->ok()) {
-            throw new \RuntimeException(
-                "Failed to delete forum topic: " . $response->json('description')
-            );
+        if ($this->useQueue) {
+            $chat->dispatch();
+
+        } else {
+
+            $response = $chat->send();
+
+            if (!$response->ok()) {
+                throw new \RuntimeException(
+                    "Failed to delete forum topic: " . $response->json('description')
+                );
+            }
         }
     }
 }

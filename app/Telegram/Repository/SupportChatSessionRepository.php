@@ -4,6 +4,7 @@ namespace App\Telegram\Repository;
 
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\DTO\ChatSession;
+use App\Telegram\Enum\ChatStatus;
 use DefStudio\Telegraph\Concerns\HasStorage;
 use DefStudio\Telegraph\Contracts\Storable;
 use DefStudio\Telegraph\DTO\Message;
@@ -51,6 +52,7 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
         $from = $message->from();
 
         return new ChatSession(
+            status: ChatStatus::NEW ,
             telegram_user_id: $from->id(),
             topicId: 0, // будет установлен позже
             firstName: $from->firstName() ?? '',
@@ -70,30 +72,27 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
     public function saveSession(ChatSession $session): void
     {
         $sessionData = $session->toArray();
-        $ttl = config('telegraph.session_ttl', 2592000); // 30 дней по умолчанию
 
         // Сохраняем данные в транзакции для атомарности
-       // $this->storage()->transaction(function () use ($session, $sessionData, $ttl) {
+        // $this->storage()->transaction(function () use ($session, $sessionData, $ttl) {
 
 
         // Сохраняем по ID пользователя
+        $this->storage()->set(
+            self::USER_PREFIX . $session->telegram_user_id,
+            $sessionData
+        );
+
+        // Сохраняем по ID темы (если установлен)
+        if ($session->topicId > 0) {
             $this->storage()->set(
-                self::USER_PREFIX . $session->telegram_user_id,
-                $sessionData,
-                $ttl
+                self::TOPIC_PREFIX . $session->topicId,
+                $sessionData
             );
-
-            // Сохраняем по ID темы (если установлен)
-            if ($session->topicId > 0) {
-                $this->storage()->set(
-                    self::TOPIC_PREFIX . $session->topicId,
-                    $sessionData,
-                    $ttl
-                );
-            }
+        }
 
 
-       // });
+        // });
 
         // Добавляем в список всех сессий
         $this->addToAllSessions($session->telegram_user_id);
@@ -111,7 +110,7 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
         $this->storage()->forget(self::USER_PREFIX . $userId);
 
         if ($session->topicId > 0) {
-            $this->storage()-forget(self::TOPIC_PREFIX . $session->topicId);
+            $this->storage()->forget(self::TOPIC_PREFIX . $session->topicId);
         }
 
         // Удаляем из списка всех сессий

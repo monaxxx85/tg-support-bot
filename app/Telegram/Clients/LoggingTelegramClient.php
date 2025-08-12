@@ -3,16 +3,20 @@
 namespace App\Telegram\Clients;
 
 use App\Telegram\Contracts\TelegramClientInterface;
-use DefStudio\Telegraph\DTO\Message;
 use Illuminate\Support\Facades\Log;
 
 class LoggingTelegramClient implements TelegramClientInterface
 {
     public function __construct(
         protected readonly TelegramClientInterface $client,
-        protected readonly string                  $context = 'telegram'
-    )
+        protected readonly string $context = 'telegram'
+    ) {
+    }
+
+    public function setQueue(bool $queue): TelegramClientInterface
     {
+        $this->client->setQueue($queue);
+        return $this;
     }
 
     public function sendMessage(int $chatId, string $text, ?int $threadId = null): void
@@ -36,9 +40,24 @@ class LoggingTelegramClient implements TelegramClientInterface
         }
     }
 
-    public function copyMessage(Message $message, int $chatId, ?string $prefix = '', ?int $threadId = null): void
+    public function copyMessage(int $toChatId, int $fromChatId, int $messageId, ?int $threadId = null): void
     {
-        $this->sendMessage($chatId, $message->text(), $threadId);
+        Log::info("Copying message ", [
+            'context' => $this->context,
+            'to_chat_id' => $toChatId,
+            'from_chat_id' => $fromChatId,
+            'message_id' => $messageId,
+            'thread_id' => $threadId,
+        ]);
+
+        try {
+            $this->client->copyMessage($toChatId, $fromChatId, $messageId, $threadId);
+        } catch (\Exception $e) {
+            Log::error("Failed to copying message", [
+                'context' => $this->context,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     public function createForumTopic(int $chatId, string $name, ?string $emoji = null): int

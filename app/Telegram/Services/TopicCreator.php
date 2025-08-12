@@ -3,28 +3,37 @@
 namespace App\Telegram\Services;
 
 use App\Telegram\Contracts\TelegramClientInterface;
-use App\Telegram\Enum\TelegramEmojiEnum;
 use App\Telegram\Presenters\UserPresenter;
 use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Enum\ChatStatusEmojiMapper;
+use App\Telegram\Enum\ChatStatus;
+use App\Telegram\Formatters\ContactUserFormatter;
+use App\Telegram\Enum\TelegramEmoji;
 
 class TopicCreator
 {
     public function __construct(
         protected readonly TelegramClientInterface $telegramClient,
-        protected readonly UserPresenter           $userPresenter
     )
-    {
-    }
+    {}
 
     public function createForMessage(Message $message, int $groupId): int
     {
-        $name = $this->userPresenter->formatTopicName($message->from());
-        $topicId = $this->telegramClient->createForumTopic($groupId, $name, TelegramEmojiEnum::QuestionIcon->value);
+
+        $userPresenter = new UserPresenter($message->from());
+        $nameTopic = $userPresenter->topicName();
+
+        /**
+         * @var TelegramEmoji
+         */
+        $emoji = ChatStatusEmojiMapper::getEmoji(ChatStatus::NEW);
+
+        $topicId = $this->telegramClient->createForumTopic($groupId, $nameTopic, $emoji->value);
 
 
         $this->telegramClient->sendMessage(
             $groupId,
-            $this->userPresenter->contact($message->from()),
+            (new ContactUserFormatter)->render($userPresenter),
             $topicId
         );
 

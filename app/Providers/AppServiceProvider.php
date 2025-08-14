@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(TelegramConfig::class, function () {
-            return new TelegramConfig(supportGroupId: (int) config('telegraph.support_group_id'));
+            return new TelegramConfig(supportGroupId: (int)config('telegraph.support_group_id'));
         });
 
         $this->app->bind(SupportChatInterface::class, function ($app) {
@@ -44,26 +44,37 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SessionRepositoryInterface::class, SupportChatSessionRepository::class);
 
         $this->app->singleton('commands.private', function ($app) {
-            return new CommandResolver([
-                $app->make(\App\Telegram\Commands\PrivateChat\StartCommand::class),
-                // сюда добавляем приватные команды
-            ]);
 
+            $commands = config('bot.command.private') ?? [];
+
+            $arg = [];
+            foreach ($commands as $command)
+                $arg[] = $app->make($command);
+
+            return new CommandResolver($arg);
         });
 
         $this->app->singleton('commands.support', function ($app) {
-            return new CommandResolver([
-                $app->make(\App\Telegram\Commands\SupportChat\ContactCommand::class),
-                // сюда добавляем команды для поддержки
-            ]);
+
+            $commands = config('bot.command.support') ?? [];
+
+            $arg = [];
+            foreach ($commands as $command)
+                $arg[] = $app->make($command);
+
+            return new CommandResolver($arg);
 
         });
 
         $this->app->singleton('commands.general', function ($app) {
-            return new CommandResolver([
-                $app->make(\App\Telegram\Commands\GeneralChat\TestCommand::class),
-                // сюда добавляем приватные команды
-            ]);
+
+            $commands = config('bot.command.general') ?? [];
+
+            $arg = [];
+            foreach ($commands as $command)
+                $arg[] = $app->make($command);
+
+            return new CommandResolver($arg);
 
         });
 
@@ -74,6 +85,27 @@ class AppServiceProvider extends ServiceProvider
                 $app->make('commands.support'),
                 $app->make('commands.general'),
             );
+        });
+
+
+        $this->app->singleton(\App\Telegram\FSM\Contracts\ContextRepositoryInterface::class,
+            \App\Telegram\FSM\Repository\ContextRepository::class
+        );
+
+        $this->app->singleton(\App\Telegram\FSM\Core\FSM::class, function ($app) {
+            $registry = $app->make(\App\Telegram\FSM\Core\Registry::class);
+            $repo = $app->make(\App\Telegram\FSM\Contracts\ContextRepositoryInterface::class);
+
+
+            $scenarios = config('bot.fsm.scenarios') ?? [];
+            $arg = [];
+            foreach ($scenarios as $sc) {
+                $sc = $app->make($sc);
+                $registry->registerScenario($sc);
+                $arg[$sc->name()] = $sc;
+            }
+
+            return new \App\Telegram\FSM\Core\FSM($registry, $repo, $arg);
         });
 
     }

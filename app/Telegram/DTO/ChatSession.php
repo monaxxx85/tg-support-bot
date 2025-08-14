@@ -9,21 +9,26 @@ use DefStudio\Telegraph\DTO\User;
 class ChatSession
 {
     public function __construct(
-        public ChatStatus $status,
+        public ChatStatus   $status,
         public readonly int $telegram_user_id,
-        public int $topicId,
-        public string $firstName,
-        public string $lastName,
-        public ?string $username,
-        public bool $isBot,
-        public string $languageCode,
-        public bool $isPremium,
-        public string $created_at,
-        public ?string $closed_at = null,
-        public ?string $closed_reason = null,
-        public bool $is_banned = false,
-        public string $last_message_from = 'user', // 'user' | 'support'
-    ) {
+        public int          $topicId,
+        public string       $firstName,
+        public string       $lastName,
+        public ?string      $username,
+        public bool         $isBot,
+        public string       $languageCode,
+        public bool         $isPremium,
+        public string       $created_at,
+        public ?string      $closed_at = null,
+        public ?string      $closed_reason = null,
+        public ?string      $state_fsm = null, // registration:awaiting_name
+        public ?array       $bag_fsm = [],
+        public ?string      $ttl_at_fsm = null,
+        public bool         $is_banned = false,
+        public string       $last_message_from = 'user', // 'user' | 'support'
+
+    )
+    {
     }
 
     /**
@@ -84,12 +89,13 @@ class ChatSession
             created_at: $data['created_at'] ?? now()->toIso8601String(),
             closed_at: $data['closed_at'] ?? null,
             closed_reason: $data['closed_reason'] ?? null,
+            state_fsm: $data['state_fsm'] ?? null,
+            bag_fsm: $data['bag_fsm'] ?? [],
+            ttl_at_fsm: $data['ttl_at_fsm'] ?? null,
         );
     }
 
-    /**
-     * Конвертирует сессию в массив для хранения
-     */
+
     public function toArray(): array
     {
         return [
@@ -107,6 +113,13 @@ class ChatSession
             'created_at' => $this->created_at,
             'closed_at' => $this->closed_at,
             'closed_reason' => $this->closed_reason,
+
+            //Context
+            'state_fsm' => $this->state_fsm,
+            'bag_fsm' => $this->bag_fsm,
+            'ttl_at_fsm' => $this->ttl_at_fsm,
+
+
         ];
     }
 }

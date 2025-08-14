@@ -10,4 +10,5 @@ interface TelegramCommandInterface
     public function getName(): string;
     public function getAliases(): array;
     public function getDescription(): string;
+    public function isAllow(): bool;
 }

@@ -36,4 +36,9 @@ abstract class BaseCommand implements TelegramCommandInterface
         return [];
     }
 
+    public function isAllow(): bool
+    {
+        return true;
+    }
+
 }

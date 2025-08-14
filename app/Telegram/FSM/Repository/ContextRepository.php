@@ -25,6 +25,7 @@ class ContextRepository implements ContextRepositoryInterface
 
         return new Context(
             $session->telegram_user_id,
+            $session->chat_id_fsm,
             $session->state_fsm ? StateId::parse($session->state_fsm) : null,
             $session->bag_fsm ?? [],
             $session->ttl_at_fsm
@@ -41,6 +42,7 @@ class ContextRepository implements ContextRepositoryInterface
         }
 
         $session->state_fsm = $ctx->state?->key();
+        $session->chat_id_fsm = $ctx->chatId;
         $session->bag_fsm = $ctx->bag;
         $session->ttl_at_fsm = $ctx->ttlAt;
 
@@ -61,6 +63,7 @@ class ContextRepository implements ContextRepositoryInterface
         }
 
         $session->state_fsm = null;
+        $session->chat_id_fsm = null;
         $session->bag_fsm = null;
         $session->ttl_at_fsm = null;
 

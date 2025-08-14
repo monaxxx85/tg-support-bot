@@ -57,7 +57,8 @@ class Handler extends WebhookHandler
                     'new_status' => $chatMemberUpdate->new()->status(),
                 ]
             ),
-            $chatMemberUpdate->from()->id()
+            $chatMemberUpdate->from()->id(),
+            $chatMemberUpdate->chat()->id(),
         );
 
         if ($isOn) {
@@ -103,7 +104,9 @@ class Handler extends WebhookHandler
                 'callback',
                 $this->data->toArray() ?? []
             ),
-            $this->callbackQuery->from()->id()
+            $this->callbackQuery->from()->id(),
+            $this->chat->chat_id
+
         );
 
         if ($isOn) {
@@ -126,7 +129,6 @@ class Handler extends WebhookHandler
     }
 
 
-
     protected function handleCommand(Stringable $text): void
     {
         [$command, $parameter] = $this->parseCommand($text);
@@ -141,12 +143,14 @@ class Handler extends WebhookHandler
                     'parameter' => $parameter
                 ]
             ),
-            $this->message->from()->id()
+            $this->message->from()->id(),
+            $this->message->chat()->id(),
         );
 
         if ($isOn) {
             return;
         }
+
 
         /**
          * @var TelegramCommandInterface|null
@@ -178,18 +182,21 @@ class Handler extends WebhookHandler
             return;
         }
 
+
         // сценарий
         $isOn = $this->fsm->dispatch(
             new Event(
                 'text',
                 ['text' => $text->value()]
             ),
-            $this->message->from()->id()
+            $this->message->from()->id(),
+            $this->message->chat()->id()
         );
 
         if ($isOn) {
             return;
         }
+
 
         // стандартная логика
         match (true) {

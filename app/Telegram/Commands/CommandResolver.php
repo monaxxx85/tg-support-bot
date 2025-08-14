@@ -23,7 +23,8 @@ class CommandResolver
                 $command->getName() === $name ||
                 in_array($name, $command->getAliases(), true)
             ) {
-                return $command;
+                if($command->isAllow())
+                    return $command;
             }
         }
         return null;

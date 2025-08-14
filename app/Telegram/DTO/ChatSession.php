@@ -12,9 +12,10 @@ class ChatSession
         public ChatStatus   $status,
         public readonly int $telegram_user_id,
         public int          $topicId,
-        public string       $firstName,
-        public string       $lastName,
+        public ?string      $firstName,
+        public ?string      $lastName,
         public ?string      $username,
+        public ?string      $phoneNumber,
         public bool         $isBot,
         public string       $languageCode,
         public bool         $isPremium,
@@ -22,14 +23,13 @@ class ChatSession
         public ?string      $closed_at = null,
         public ?string      $closed_reason = null,
         public ?string      $state_fsm = null, // registration:awaiting_name
+        public ?int         $chat_id_fsm = null,
         public ?array       $bag_fsm = [],
         public ?string      $ttl_at_fsm = null,
         public bool         $is_banned = false,
         public string       $last_message_from = 'user', // 'user' | 'support'
 
-    )
-    {
-    }
+    ){}
 
     /**
      * Проверяет, активна ли сессия
@@ -81,6 +81,7 @@ class ChatSession
             firstName: $data['firstName'] ?? '',
             lastName: $data['lastName'] ?? '',
             username: $data['username'] ?? null,
+            phoneNumber: $data['phone_number'] ?? null,
             isBot: $data['isBot'] ?? false,
             languageCode: $data['languageCode'] ?? 'en',
             isPremium: $data['isPremium'] ?? false,
@@ -90,6 +91,7 @@ class ChatSession
             closed_at: $data['closed_at'] ?? null,
             closed_reason: $data['closed_reason'] ?? null,
             state_fsm: $data['state_fsm'] ?? null,
+            chat_id_fsm: $data['chat_id_fsm'] ?? null,
             bag_fsm: $data['bag_fsm'] ?? [],
             ttl_at_fsm: $data['ttl_at_fsm'] ?? null,
         );
@@ -105,6 +107,7 @@ class ChatSession
             'firstName' => $this->firstName,
             'lastName' => $this->lastName,
             'username' => $this->username,
+            'phone_number' => $this->phoneNumber,
             'isBot' => $this->isBot,
             'languageCode' => $this->languageCode,
             'isPremium' => $this->isPremium,
@@ -116,6 +119,7 @@ class ChatSession
 
             //Context
             'state_fsm' => $this->state_fsm,
+            'chat_id_fsm' => $this->chat_id_fsm,
             'bag_fsm' => $this->bag_fsm,
             'ttl_at_fsm' => $this->ttl_at_fsm,
 

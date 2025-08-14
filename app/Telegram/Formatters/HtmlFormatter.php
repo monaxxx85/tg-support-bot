@@ -25,7 +25,20 @@ class HtmlFormatter implements TelegramFormatterInterface
 
             $label = $this->humanizeKey($key);
 
-            $lines[] = "<b>{$label}:</b> {$value}";
+            if(is_array($value)){
+
+                $lines[] = "<b>{$label}:</b>";
+
+                foreach ($value as $_key => $_value){
+                    $_label = $this->humanizeKey($_key);
+                    $lines[] = "<b> — {$_label}: {$_value}</b>";
+                }
+
+            }else{
+
+                $lines[] = "<b>{$label}:</b> {$value}";
+            }
+
         }
 
         return implode("\n", $lines);

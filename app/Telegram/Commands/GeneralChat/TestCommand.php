@@ -2,14 +2,11 @@
 
 namespace App\Telegram\Commands\GeneralChat;
 
-
 use App\Telegram\Contracts\TelegramClientInterface;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Commands\BaseCommand;
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\DTO\TelegramConfig;
-use DefStudio\Telegraph\Keyboard\Button;
-use DefStudio\Telegraph\Keyboard\Keyboard;
 
 class TestCommand extends BaseCommand
 {
@@ -35,10 +32,10 @@ class TestCommand extends BaseCommand
 
     public function getDescription(): string
     {
-        return "Тестовое сообщение  /test {parameter?}";
+        return "Тестовое сообщение для демострации кнопок /test {parameter?}";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
 
         if ($parameter === "") {
@@ -54,6 +51,7 @@ class TestCommand extends BaseCommand
                     ]
                 );
 
+
         } else {
 
             $this->telegramClient
@@ -61,11 +59,16 @@ class TestCommand extends BaseCommand
                     $this->supportChatId,
                     "Тестовое сообщения с кнопками 2",
                     null,
-                    Keyboard::make()->buttons([
-                        Button::make('Run')->action('test')->param('var1', '1')->param('var2', '2'),
-                        Button::make('Open')->url('https://google.com'),
-                        Button::make('Search')->switchInlineQuery('query')
-                    ])->chunk(3)
+                    [
+                        [
+                            ['text' => 'Run', 'callback_data' => 'action:test;var1:1;var2:2'],
+                            ['text' => 'Open', 'url' => 'https://google.com'],
+
+                        ],
+                        [
+                            ['text' => 'Search', 'switch_inline_query' => 'query'],
+                        ]
+                    ]
                 );
         }
     }

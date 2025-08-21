@@ -3,9 +3,6 @@
 
 return [
 
-    'support_group_id' => env('TELEGRAM_SUPPORT_GROUP_ID'),
-    'use_queue' => env('TELEGRAM_USE_QUEUE', false),
-
     /*
      * Telegram api base url, it can be overridden
      * for self-hosted servers
@@ -31,7 +28,7 @@ return [
          *
          * For reference, see https://docs.defstudio.it/telegraph/webhooks/overview
          */
-        'handler' => \App\Telegram\Handlers\Handler::class,
+        'handler' => \App\Telegram\Webhook\Handler::class,
 
         /*
          * Middleware to be applied to the webhook route

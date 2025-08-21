@@ -5,10 +5,10 @@ namespace App\Telegram\Services;
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\Contracts\SupportChatInterface;
 use App\Telegram\Contracts\TelegramClientInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\DTO\TelegramConfig;
-use App\Jobs\CreateTopicJob;
+use App\Telegram\Jobs\CreateTopicJob;
 use App\Telegram\Enum\ChatStatus;
-use DefStudio\Telegraph\DTO\Message;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Bus;
 
@@ -25,7 +25,7 @@ class AsyncSupportChatService implements SupportChatInterface
         $this->supportGroupId = $this->config->supportGroupId;
     }
 
-    public function handleUserMessage(Message $message): void
+    public function handleUserMessage(TelegramMessage $message): void
     {
         $userId = $message->from()->id();
         $lockKey = $this->lockKey($userId);
@@ -65,7 +65,7 @@ class AsyncSupportChatService implements SupportChatInterface
         $this->sessionRepository->saveSession($session);
     }
 
-    public function handleSupportReply(Message $message): void
+    public function handleSupportReply(object $message): void
     {
         $topicId = $message->replyToMessage()?->messageThreadId();
         if (!$topicId)

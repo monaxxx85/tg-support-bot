@@ -3,7 +3,6 @@
 namespace App\Telegram\Contracts;
 
 use App\Telegram\DTO\ChatSession;
-use DefStudio\Telegraph\DTO\Message;
 
 interface SessionRepositoryInterface
 {
@@ -20,7 +19,7 @@ interface SessionRepositoryInterface
     /**
      * Создает новую сессию на основе входящего сообщения
      */
-    public function createSession(Message $message): ChatSession;
+    public function createSession(TelegramMessage $message): ChatSession;
 
     /**
      * Сохраняет сессию в хранилище

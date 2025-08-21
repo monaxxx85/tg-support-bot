@@ -3,11 +3,11 @@
 namespace App\Telegram\Repository;
 
 use App\Telegram\Contracts\SessionRepositoryInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\DTO\ChatSession;
 use App\Telegram\Enum\ChatStatus;
 use DefStudio\Telegraph\Concerns\HasStorage;
 use DefStudio\Telegraph\Contracts\Storable;
-use DefStudio\Telegraph\DTO\Message;
 use Illuminate\Support\Facades\Log;
 
 
@@ -47,7 +47,7 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
         return ChatSession::fromArray($sessionData);
     }
 
-    public function createSession(Message $message): ChatSession
+    public function createSession(TelegramMessage $message): ChatSession
     {
         $from = $message->from();
 
@@ -58,6 +58,7 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
             firstName: $from->firstName() ?? '',
             lastName: $from->lastName() ?? '',
             username: $from->username() ?? '',
+            phoneNumber: null,
             isBot: $from->isBot() ?? false,
             languageCode: $from->languageCode() ?? 'en',
             isPremium: $from->isPremium() ?? false,
@@ -73,10 +74,6 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
     {
         $sessionData = $session->toArray();
 
-        // Сохраняем данные в транзакции для атомарности
-        // $this->storage()->transaction(function () use ($session, $sessionData, $ttl) {
-
-
         // Сохраняем по ID пользователя
         $this->storage()->set(
             self::USER_PREFIX . $session->telegram_user_id,
@@ -90,9 +87,6 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
                 $sessionData
             );
         }
-
-
-        // });
 
         // Добавляем в список всех сессий
         $this->addToAllSessions($session->telegram_user_id);
@@ -109,7 +103,7 @@ class SupportChatSessionRepository implements SessionRepositoryInterface, Storab
         // Удаляем из основного хранилища
         $this->storage()->forget(self::USER_PREFIX . $userId);
 
-        if ($session->topicId > 0) {
+        if ($session->topicId > 0) { 
             $this->storage()->forget(self::TOPIC_PREFIX . $session->topicId);
         }
 

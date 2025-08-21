@@ -3,24 +3,18 @@
 namespace App\Telegram\FSM\Scenarios\GetContact;
 
 use App\Telegram\Contracts\TelegramClientInterface;
-use App\Telegram\FSM\Contracts\StateInterface;
-use App\Telegram\FSM\Core\{CallbackData, Context, Event, StateId};
+use App\Telegram\FSM\Core\{CallbackData, Context, Event, EventBus, StateId};
+use App\Telegram\FSM\Abstract\AbstractState;
 
-
-final class StartState implements StateInterface
+final class StartState extends AbstractState
 {
     public function __construct(
         protected readonly TelegramClientInterface $telegramClient,
-    ){}
+    ) {}
 
-    public function id(): StateId
-    {
-        return new StateId('get_contact', 'start');
-    }
 
     public function onEnter(Context $ctx): void
     {
-
         $this->telegramClient->sendMessage(
             $ctx->userId,
             "Введите ваш телефон:"
@@ -28,33 +22,41 @@ final class StartState implements StateInterface
 
     }
 
-    public function handle(Event $event, Context $ctx): ?StateId
+
+    public function handleChatMessage(Event $event, Context $context, ?EventBus $eventBus = null): ?StateId
     {
-        if ($event->type === 'text') {
-
-            $ctx->bag['phone'] = trim((string)($event->data['text'] ?? ''));
-            $this->telegramClient->sendMessage(
-                $ctx->userId,
-                "Проверьте данные:\nТелефон: {$ctx->bag['phone']}",
-                null,
-                [
-                    ['text' => 'Подтвердить',
-                        'callback_data' => CallbackData::make('get_contact', 'finish', 'confirm')],
-                    ['text' => 'Изменить телефон',
-                        'callback_data' => CallbackData::make('get_contact', 'start', 'edit_phone')],
-                ]
-            );
-        }
-
-        if ($event->type === 'callback') {
-            return match ($event->data['event'] ?? null) {
-                'confirm' => new StateId('get_contact', 'finished'),
-                'edit_phone' => new StateId('get_contact', 'start'),
-                default => null,
-            };
-        }
+        $context->bag['phone'] = trim((string) ($event->data['text'] ?? ''));
+        $this->telegramClient->sendMessage(
+            $context->userId,
+            "Проверьте данные:\nТелефон: {$context->bag['phone']}",
+            null,
+            [
+                ['text' => 'Подтвердить',
+                    'callback_data' => CallbackData::make(
+                        $this->id()->scenario,
+                        $this->id()->state,
+                        'confirm')
+                    ],
+                ['text' => 'Изменить телефон',
+                    'callback_data' => CallbackData::make(
+                        $this->id()->scenario,
+                        $this->id()->state,
+                        'edit_phone')
+                    ],
+            ]
+        );
 
         return null;
     }
+
+    public function handleCallbackQuery(Event $event, Context $context, ?EventBus $eventBus = null): ?StateId
+    {
+        return match ($event->name()) {
+            'confirm' => $this->finish(),
+            'edit_phone' => $this->id(),
+            default => null,
+        };
+    }
+
 }
 

@@ -2,18 +2,17 @@
 
 namespace App\Telegram\FSM\Scenarios\Registration;
 
-use App\Telegram\FSM\Contracts\StateInterface;
-use App\Telegram\FSM\Core\{Context, Event, StateId};
+use App\Telegram\FSM\Abstract\AbstractState;
+
+use App\Telegram\FSM\Core\{Context, Event, EventBus, StateId};
 use App\Telegram\Contracts\TelegramClientInterface;
 
-final class AwaitingNameState implements StateInterface
+final class AwaitingNameState extends AbstractState
 {
     public function __construct(
         protected readonly TelegramClientInterface $telegramClient,
     ){}
 
-    public function id(): StateId
-    { return new StateId('registration', 'awaiting_name'); }
 
     public function onEnter(Context $ctx): void
     {
@@ -23,12 +22,10 @@ final class AwaitingNameState implements StateInterface
         );
     }
 
-    public function handle(Event $event, Context $ctx): ?StateId
+    public function handleChatMessage(Event $event, Context $context, ?EventBus $eventBus = null): ?StateId
     {
-        if ($event->type === 'text') {
-            $ctx->bag['name'] = trim((string)($event->data['text'] ?? ''));
-            return new StateId('registration', 'awaiting_email');
-        }
-        return null;
+        $context->bag['name'] = trim((string)($event->data['text'] ?? ''));
+
+        return $this->nextInOrder();
     }
 }

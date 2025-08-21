@@ -4,7 +4,6 @@ namespace App\Telegram\Clients;
 
 use App\Telegram\Contracts\TelegramClientInterface;
 use DefStudio\Telegraph\Facades\Telegraph;
-use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;
 
 class TelegraphClient implements TelegramClientInterface
@@ -13,7 +12,7 @@ class TelegraphClient implements TelegramClientInterface
 
     public function __construct(bool $useQueue = null)
     {
-        $this->useQueue = $useQueue ?? config('telegraph.use_queue');
+        $this->useQueue = $useQueue ?? config('support.bot.use_queue');
     }
 
     public function setQueue(bool $queue): TelegramClientInterface
@@ -30,7 +29,7 @@ class TelegraphClient implements TelegramClientInterface
      * @return void
      * @throws \RuntimeException
      */
-    public function sendMessage(int $chatId, string $text, ?int $threadId = null, Keyboard|array $keyboard = null): void
+    public function sendMessage(int $chatId, string $text, ?int $threadId = null, ?array $keyboard = null): void
     {
         $chat = Telegraph::chat($chatId);
 
@@ -39,12 +38,9 @@ class TelegraphClient implements TelegramClientInterface
 
         $chat = $chat->message($text);
 
-        if ($keyboard !== null) {
-            if (is_array($keyboard))
-                $chat = $chat->keyboard([$keyboard]);
-            if($keyboard instanceof Keyboard){
-                 $chat = $chat->keyboard($keyboard);
-            }
+        if ($keyboard !== null && is_array($keyboard)) {
+            $chat = $chat->keyboard([$keyboard]);
+
         }
 
         if ($this->useQueue) {

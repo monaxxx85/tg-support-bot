@@ -3,16 +3,13 @@
 namespace App\Telegram\Commands\SupportChat;
 
 
-use App\Telegram\Contracts\TelegramClientInterface;
 use App\Telegram\FSM\Core\FSM;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Commands\BaseCommand;
 use App\Telegram\Contracts\SessionRepositoryInterface;
-use App\Telegram\Presenters\UserPresenter;
-use App\Telegram\DTO\TelegramConfig;
-use App\Telegram\Formatters\ContactUserFormatter;
 
-class GetContactCommand extends BaseCommand
+
+class GetPhoneNumberCommand extends BaseCommand
 {
     protected int $supportChatId;
 
@@ -25,12 +22,12 @@ class GetContactCommand extends BaseCommand
 
     public function getName(): string
     {
-        return 'get_contact';
+        return 'get_phone';
     }
 
     public function getAliases(): array
     {
-        return [];
+        return ['get-phone'];
     }
 
     public function getDescription(): string
@@ -38,7 +35,7 @@ class GetContactCommand extends BaseCommand
         return "Получить телефон от пользователя";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
         $topicId = $message->messageThreadId();
         if (!$topicId)
@@ -49,7 +46,13 @@ class GetContactCommand extends BaseCommand
         if (!$session)
             return;
 
-        $this->fsm->start('get_contact', $session->telegram_user_id, $session->telegram_user_id, [], 1);
+        $this->fsm->start(
+            'get_contact',
+            $session->telegram_user_id,
+            $session->telegram_user_id,
+            [],
+            1
+        );
 
     }
 }

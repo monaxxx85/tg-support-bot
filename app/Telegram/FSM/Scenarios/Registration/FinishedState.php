@@ -2,24 +2,23 @@
 
 namespace App\Telegram\FSM\Scenarios\Registration;
 
+use App\Telegram\Contracts\SessionRepositoryInterface;
+use App\Telegram\DTO\TelegramConfig;
+use App\Telegram\FSM\Abstract\AbstractState;
 use App\Telegram\FSM\Contracts\ContextRepositoryInterface;
-use App\Telegram\FSM\Contracts\StateInterface;
-use App\Telegram\FSM\Core\{Context, Event, StateId};
+use App\Telegram\FSM\Core\Context;
 use App\Telegram\Contracts\TelegramClientInterface;
 
-final class FinishedState implements StateInterface
+final class FinishedState extends AbstractState
 {
     public function __construct(
-        protected readonly TelegramClientInterface    $telegramClient,
+        protected readonly TelegramClientInterface $telegramClient,
         protected readonly ContextRepositoryInterface $contextRepository,
-    )
-    {
+        protected readonly SessionRepositoryInterface $sessionRepository,
+        protected readonly TelegramConfig $config,
+    ) {
     }
 
-    public function id(): StateId
-    {
-        return new StateId('registration', 'finished');
-    }
 
     public function onEnter(Context $ctx): void
     {
@@ -28,12 +27,15 @@ final class FinishedState implements StateInterface
             "Готово! Регистрация завершена 👌"
         );
 
-        $this->contextRepository->reset($ctx->userId);
-        // здесь можно сбросить контекст или оставить
+        $session = $this->sessionRepository->findByUser($ctx->userId);
+        if ($session !== null && $session->topicId > 0) {
+            $this->telegramClient->sendMessage(
+                $this->config->supportGroupId,
+                "Пользователь завершил регистрацию! \nИмя: {$ctx->bag['name']}\nEmail: {$ctx->bag['email']}",
+                $session->topicId
+            );
+        }
     }
 
-    public function handle(Event $event, Context $ctx): ?StateId
-    {
-        return null;
-    }
+  
 }

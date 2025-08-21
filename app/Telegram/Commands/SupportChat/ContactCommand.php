@@ -4,7 +4,7 @@ namespace App\Telegram\Commands\SupportChat;
 
 
 use App\Telegram\Contracts\TelegramClientInterface;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Commands\BaseCommand;
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\Presenters\UserPresenter;
@@ -38,7 +38,7 @@ class ContactCommand extends BaseCommand
         return "Получить данные пользователя";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
         $topicId = $message->messageThreadId();
         if (!$topicId)

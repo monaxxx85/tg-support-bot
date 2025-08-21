@@ -2,34 +2,35 @@
 
 namespace App\Telegram\DTO;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use App\Telegram\Enum\ChatStatus;
-use DefStudio\Telegraph\DTO\User;
+use Illuminate\Contracts\Support\Arrayable;
 
-class ChatSession
+class ChatSession implements Arrayable
 {
     public function __construct(
-        public ChatStatus   $status,
+        public ChatStatus $status,
         public readonly int $telegram_user_id,
-        public int          $topicId,
-        public ?string      $firstName,
-        public ?string      $lastName,
-        public ?string      $username,
-        public ?string      $phoneNumber,
-        public bool         $isBot,
-        public string       $languageCode,
-        public bool         $isPremium,
-        public string       $created_at,
-        public ?string      $closed_at = null,
-        public ?string      $closed_reason = null,
-        public ?string      $state_fsm = null, // registration:awaiting_name
-        public ?int         $chat_id_fsm = null,
-        public ?array       $bag_fsm = [],
-        public ?string      $ttl_at_fsm = null,
-        public bool         $is_banned = false,
-        public string       $last_message_from = 'user', // 'user' | 'support'
-
-    ){}
+        public int $topicId,
+        public ?string $firstName,
+        public ?string $lastName,
+        public ?string $username,
+        public ?string $phoneNumber,
+        public bool $isBot,
+        public string $languageCode,
+        public bool $isPremium,
+        public string $created_at,
+        public ?string $closed_at = null,
+        public ?string $closed_reason = null,
+        public ?string $state_fsm = null, // registration:awaiting_name
+        public ?int $chat_id_fsm = null,
+        public ?array $bag_fsm = [],
+        public ?string $ttl_at_fsm = null,
+        public bool $is_async_pending_fsm = false,
+        public ?string $async_job_id_fsm = null,
+        public bool $is_banned = false,
+        public string $last_message_from = 'user', // 'user' | 'support'
+    ) {}
 
     /**
      * Проверяет, активна ли сессия
@@ -58,15 +59,15 @@ class ChatSession
 
     public function getUser(): User
     {
-        return User::fromArray([
-            'id' => $this->telegram_user_id,
-            'is_bot' => $this->isBot,
-            'first_name' => $this->firstName,
-            'last_name' => $this->lastName,
-            'username' => $this->username,
-            'language_code' => $this->languageCode,
-            'is_premium' => $this->isPremium,
-        ]);
+        return new User(
+            $this->telegram_user_id,
+            $this->username,
+            $this->isBot,
+            $this->firstName,
+            $this->lastName,
+            $this->languageCode,
+            $this->isPremium,
+        );
     }
 
     /**
@@ -94,6 +95,8 @@ class ChatSession
             chat_id_fsm: $data['chat_id_fsm'] ?? null,
             bag_fsm: $data['bag_fsm'] ?? [],
             ttl_at_fsm: $data['ttl_at_fsm'] ?? null,
+            is_async_pending_fsm: $data['is_async_pending_fsm'] ?? false,
+            async_job_id_fsm: $data['async_job_id_fsm'] ?? '',
         );
     }
 
@@ -122,7 +125,8 @@ class ChatSession
             'chat_id_fsm' => $this->chat_id_fsm,
             'bag_fsm' => $this->bag_fsm,
             'ttl_at_fsm' => $this->ttl_at_fsm,
-
+            'is_async_pending_fsm' => $this->is_async_pending_fsm,
+            'async_job_id_fsm' => $this->async_job_id_fsm,
 
         ];
     }

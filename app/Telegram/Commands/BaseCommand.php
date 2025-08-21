@@ -3,17 +3,13 @@
 namespace App\Telegram\Commands;
 
 use App\Telegram\Contracts\TelegramCommandInterface;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
+
 
 abstract class BaseCommand implements TelegramCommandInterface
 {
-    /**
-     * Выполнение команды
-     * @param \DefStudio\Telegraph\DTO\Message $message
-     * @param mixed $parameter
-     * @return void
-     */
-    abstract public function execute(Message $message, ?string $parameter = null): void;
+
+    abstract public function execute(TelegramMessage $message, ?string $parameter = null): void;
 
     /**
      * Основное имя команды (например, "start" )

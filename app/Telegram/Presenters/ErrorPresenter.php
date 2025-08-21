@@ -2,7 +2,6 @@
 
 namespace App\Telegram\Presenters;
 
-use DefStudio\Telegraph\DTO\User;
 use App\Telegram\Presenters\BasePresenter;
 
 class ErrorPresenter extends BasePresenter

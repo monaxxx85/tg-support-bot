@@ -20,12 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->report(function (Throwable $e) {
 
-            $errorPresenter = new ErrorPresenter($e);
-            $message = (new HtmlFormatter())->render($errorPresenter);
+            \Log::error($e->getMessage(), 
+            ['file' => $e->getFile(), 'line' => $e->getLine()]);
 
-            Telegraph::chat(config('telegraph.support_group_id'))
-                 ->message($message)
-                 ->send();
+
+            // $errorPresenter = new ErrorPresenter($e);
+            // $message = (new HtmlFormatter())->render($errorPresenter);
+    
+            // Telegraph::chat(config('bot.support_group_id'))
+            //      ->message($message)
+            //      ->send();
         });
 
     })->create();

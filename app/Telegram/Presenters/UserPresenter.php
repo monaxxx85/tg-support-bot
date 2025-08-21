@@ -2,12 +2,12 @@
 
 namespace App\Telegram\Presenters;
 
-use DefStudio\Telegraph\DTO\User;
+use App\Telegram\Contracts\TelegramUser;
 use App\Telegram\Presenters\BasePresenter;
 
 class UserPresenter extends BasePresenter
 {
-    public function __construct(private readonly User $user)
+    public function __construct(private readonly TelegramUser $user)
     {
     }
 

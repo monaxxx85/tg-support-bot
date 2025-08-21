@@ -19,12 +19,13 @@ class CommandResolver
     public function resolve(string $name): ?TelegramCommandInterface
     {
         foreach ($this->commands as $command) {
-            if (
-                $command->getName() === $name ||
-                in_array($name, $command->getAliases(), true)
-            ) {
-                if($command->isAllow())
+
+            if ($command->getName() === $name
+                || in_array($name, $command->getAliases(), true)) {
+
+                if ($command->isAllow())
                     return $command;
+
             }
         }
         return null;

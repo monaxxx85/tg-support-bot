@@ -2,27 +2,29 @@
 
 namespace App\Telegram\Resolvers;
 
-use DefStudio\Telegraph\DTO\ChatMember;
-use DefStudio\Telegraph\DTO\ChatMemberUpdate;
+use App\Telegram\Contracts\TelegramChatMember;
+use App\Telegram\Contracts\TelegramUpdate;
 
 class ChatMemberUpdateResolver
 {
-    public function isUserBannedBot(ChatMemberUpdate $update): bool
+    public function isUserBannedBot(TelegramUpdate $update): bool
     {
-        return $update->new()->status() === ChatMember::STATUS_KICKED
+        return $update->new()->status() === TelegramChatMember::STATUS_KICKED
             && (int)$update->chat()->id() === (int)$update->from()->id();
     }
 
-    public function isUserJoinedGroup(ChatMemberUpdate $update): bool
+    public function isUserJoinedGroup(TelegramUpdate $update): bool
     {
-        return $update->new()->status() === ChatMember::STATUS_MEMBER
-            && $update->previous()->status() !== ChatMember::STATUS_MEMBER;
+        return $update->new()->status() === TelegramChatMember::STATUS_MEMBER
+            && $update->previous()->status() !== TelegramChatMember::STATUS_MEMBER;
     }
 
-    public function isUserLeftGroup(ChatMemberUpdate $update): bool
+    public function isUserLeftGroup(TelegramUpdate $update): bool
     {
-        return in_array($update->new()->status(), [ChatMember::STATUS_LEFT, ChatMember::STATUS_KICKED])
-            && $update->previous()->status() === ChatMember::STATUS_MEMBER;
+        return in_array(
+            $update->new()->status(), 
+            [TelegramChatMember::STATUS_LEFT, TelegramChatMember::STATUS_KICKED])
+            && $update->previous()->status() === TelegramChatMember::STATUS_MEMBER;
     }
 
 }

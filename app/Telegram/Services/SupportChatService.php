@@ -4,8 +4,8 @@ namespace App\Telegram\Services;
 
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\Contracts\TelegramClientInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Enum\ChatStatus;
-use DefStudio\Telegraph\DTO\Message;
 use App\Telegram\DTO\TelegramConfig;
 use App\Telegram\Contracts\SupportChatInterface;
 
@@ -24,7 +24,7 @@ class SupportChatService implements SupportChatInterface
         $this->supportGroupId = $this->config->supportGroupId;
     }
 
-    public function handleUserMessage(Message $message): void
+    public function handleUserMessage(TelegramMessage $message): void
     {
         $session = $this->sessionRepository->findByUser($message->from()->id());
 
@@ -49,7 +49,7 @@ class SupportChatService implements SupportChatInterface
 
     }
 
-    public function handleSupportReply(Message $message): void
+    public function handleSupportReply(TelegramMessage $message): void
     {
         $topicId = $message->replyToMessage()?->messageThreadId();
         if (!$topicId)
@@ -67,7 +67,8 @@ class SupportChatService implements SupportChatInterface
         $this->sessionRepository->saveSession($session);
 
 
-        if ($session->status !== ChatStatus::OPEN) {
+        if ($session->status !== ChatStatus::BANNED
+            && $session->status !== ChatStatus::OPEN) {
             $this->chatStatusService->updateStatus($session->telegram_user_id, ChatStatus::OPEN);
         }
     }

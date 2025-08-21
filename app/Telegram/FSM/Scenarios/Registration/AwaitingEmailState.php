@@ -3,20 +3,16 @@
 // app/Telegram/FSM/Scenarios/Registration/AwaitingEmailState.php
 namespace App\Telegram\FSM\Scenarios\Registration;
 
-use App\Telegram\FSM\Contracts\StateInterface;
-use App\Telegram\FSM\Core\{Context, Event, StateId};
+use App\Telegram\FSM\Abstract\AbstractState;
+use App\Telegram\FSM\Core\{Context, Event, EventBus, StateId};
 use App\Telegram\Contracts\TelegramClientInterface;
 use App\Telegram\FSM\Core\CallbackData;
 
-final class AwaitingEmailState implements StateInterface
+final class AwaitingEmailState extends AbstractState
 {
     public function __construct(
         protected readonly TelegramClientInterface $telegramClient,
-    ){}
-
-    public function id(): StateId
-    {
-        return new StateId('registration', 'awaiting_email');
+    ) {
     }
 
     public function onEnter(Context $ctx): void
@@ -27,34 +23,51 @@ final class AwaitingEmailState implements StateInterface
         );
     }
 
-    public function handle(Event $event, Context $ctx): ?StateId
+    public function handleChatMessage(Event $event, Context $context, ?EventBus $eventBus = null): ?StateId
     {
-        if ($event->type === 'text') {
-            $ctx->bag['email'] = trim((string)$event->data['text']);
+        $email = trim((string) ($event->data['text'] ?? ''));
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->telegramClient->sendMessage(
+                $context->userId,
+                "Пожалуйста, введите корректный email адрес."
+            );
+            // Остаемся в текущем состоянии
+            return null;
+        }
+
+        $context->bag['email'] = $email;
 
             $this->telegramClient->sendMessage(
-                $ctx->userId,
-                "Проверьте данные:\nИмя: {$ctx->bag['name']}\nEmail: {$ctx->bag['email']}",
+                $context->userId,
+                "Проверьте данные:\nИмя: {$context->bag['name']}\nEmail: {$context->bag['email']}",
                 null,
                 [
                     ['text' => 'Подтвердить',
-                        'callback_data' => CallbackData::make('registration', 'awaiting_email', 'confirm')],
+                        'callback_data' => CallbackData::make(
+                            $this->id()->scenario,
+                            $this->id()->state,
+                            'confirm'
+                            )],
                     ['text' => 'Изменить имя',
-                        'callback_data' => CallbackData::make('registration', 'awaiting_email', 'edit_name')],
+                        'callback_data' => CallbackData::make(
+                            $this->id()->scenario,
+                            $this->id()->state,
+                            'edit_name'
+                            )],
                 ]
             );
 
-        }
+            return null;
+    }
 
-        if ($event->type === 'callback') {
-            return match ($event->data['event'] ?? null) {
-                'confirm' => new StateId('registration', 'finished'),
-                'edit_name' => new StateId('registration', 'awaiting_name'),
+    public function handleCallbackQuery(Event $event, Context $context, ? EventBus $eventBus = null): ?StateId
+    {
+        return match ($event->name()) {
+                'confirm' => $this->finish(),
+                'edit_name' => $this->next('awaiting_name'),
                 default => null,
             };
-        }
-
-        return null;
     }
 }
 

@@ -3,7 +3,7 @@
 namespace App\Telegram\Commands;
 
 use App\Telegram\Contracts\MessageTypeResolverInterface;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Contracts\TelegramCommandInterface;
 
 class CommandRouter
@@ -16,7 +16,7 @@ class CommandRouter
     ) {
     }
 
-    public function resolve(Message $message, string $name): ?TelegramCommandInterface
+    public function resolve(TelegramMessage $message, string $name): ?TelegramCommandInterface
     {
         if ($this->messageTypeResolver->isPrivate($message)) {
             return $this->privateCommands->resolve($name);

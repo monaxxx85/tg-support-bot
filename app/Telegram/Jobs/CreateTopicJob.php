@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Telegram\Jobs;
 
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\Contracts\TelegramClientInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Enum\ChatStatus;
 use App\Telegram\Enum\ChatStatusEmojiMapper;
 use App\Telegram\Formatters\ContactUserFormatter;
 use App\Telegram\Presenters\UserPresenter;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use DefStudio\Telegraph\DTO\Message;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
@@ -24,7 +24,7 @@ class CreateTopicJob implements ShouldQueue
     public $uniqueFor = 60;
 
     public function __construct(
-        protected Message $message,
+        protected TelegramMessage $message,
         protected int $supportGroupId
         )
     {}

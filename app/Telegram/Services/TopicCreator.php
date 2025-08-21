@@ -3,8 +3,8 @@
 namespace App\Telegram\Services;
 
 use App\Telegram\Contracts\TelegramClientInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Presenters\UserPresenter;
-use DefStudio\Telegraph\DTO\Message;
 use App\Telegram\Enum\ChatStatusEmojiMapper;
 use App\Telegram\Enum\ChatStatus;
 use App\Telegram\Formatters\ContactUserFormatter;
@@ -17,7 +17,7 @@ class TopicCreator
     )
     {}
 
-    public function createForMessage(Message $message, int $groupId): int
+    public function createForMessage(TelegramMessage $message, int $groupId): int
     {
 
         $userPresenter = new UserPresenter($message->from());

@@ -19,7 +19,7 @@ class LoggingTelegramClient implements TelegramClientInterface
         return $this;
     }
 
-    public function sendMessage(int $chatId, string $text, ?int $threadId = null): void
+    public function sendMessage(int $chatId, string $text, ?int $threadId = null, ?array $keyboard = null): void
     {
         Log::info("Sending message to Telegram", [
             'context' => $this->context,
@@ -29,7 +29,7 @@ class LoggingTelegramClient implements TelegramClientInterface
         ]);
 
         try {
-            $this->client->sendMessage($chatId, $text, $threadId);
+            $this->client->sendMessage($chatId, $text, $threadId,$keyboard);
             Log::info("Message sent successfully", ['context' => $this->context]);
         } catch (\Exception $e) {
             Log::error("Failed to send message", [

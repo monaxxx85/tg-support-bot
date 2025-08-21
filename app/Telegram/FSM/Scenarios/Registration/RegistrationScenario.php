@@ -2,35 +2,24 @@
 
 namespace App\Telegram\FSM\Scenarios\Registration;
 
-use App\Telegram\Contracts\TelegramClientInterface;
-use App\Telegram\FSM\Contracts\ContextRepositoryInterface;
-use App\Telegram\FSM\Contracts\ScenarioInterface;
-use App\Telegram\FSM\Core\StateId;
+use App\Telegram\FSM\Abstract\AbstractScenario;
+use App\Telegram\FSM\Enum\StateStep;
 
-final class RegistrationScenario implements ScenarioInterface
+class RegistrationScenario extends AbstractScenario
 {
-    public function __construct(
-        protected readonly TelegramClientInterface $telegramClient,
-        protected readonly ContextRepositoryInterface $contextRepository,
-    ){}
-
     public function name(): string
     {
         return 'registration';
     }
 
-    public function initial(): StateId
-    {
-        return new StateId($this->name(), 'start');
-    }
-
     public function registerStates(): array
     {
         return [
-            new StartState($this->telegramClient),
-            new AwaitingNameState($this->telegramClient),
-            new AwaitingEmailState($this->telegramClient),
-            new FinishedState($this->telegramClient,$this->contextRepository),
+            StateStep::Start->value() => StartState::class,
+            'awaiting_name' => AwaitingNameState::class,
+            'awaiting_email' => AwaitingEmailState::class,
+            StateStep::Finished->value() => FinishedState::class
         ];
     }
 }
+

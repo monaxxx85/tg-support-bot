@@ -2,8 +2,9 @@
 
 namespace App\Telegram\Presenters;
 
-abstract class BasePresenter
-{
+use Illuminate\Contracts\Support\Arrayable;
 
+abstract class BasePresenter implements Arrayable
+{
     abstract public function toArray(): array;
 }

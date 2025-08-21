@@ -2,19 +2,15 @@
 
 namespace App\Telegram\Commands\PrivateChat;
 
-
-use App\Telegram\Contracts\TelegramClientInterface;
-use App\Telegram\Formatters\ViewFormatter;
-use App\Telegram\FSM\Core\FSM;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Commands\BaseCommand;
+use App\Telegram\FSM\Core\FSMManager;
 
 class RegCommand extends BaseCommand
 {
     public function __construct(
-        protected FSM $fsm
-    )
-    {
+        protected FSMManager $fSMManager
+    ) {
     }
 
     public function getName(): string
@@ -29,11 +25,16 @@ class RegCommand extends BaseCommand
 
     public function getDescription(): string
     {
-        return "Запуск сценария регистрации";
+        return "Запуск сценария тестовой регистрации";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
-        $this->fsm->start('registration', $message->from()->id(), ['utm' => 'from_start_command']);
+        $this->fSMManager->startScenario(
+            'registration',
+            $message->from()->id(),
+            $message->chat()->id(),
+            ['utm_source' => 'telegram'],
+            10);
     }
 }

@@ -4,11 +4,11 @@ namespace App\Telegram\Commands\SupportChat;
 
 use App\Telegram\Contracts\TelegramClientInterface;
 use App\Telegram\Formatters\HtmlFormatter;
-use App\Telegram\Presenters\SessionPresenter;
-use DefStudio\Telegraph\DTO\Message;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Commands\BaseCommand;
 use App\Telegram\Contracts\SessionRepositoryInterface;
 use App\Telegram\DTO\TelegramConfig;
+use App\Telegram\Presenters\ToArrayPresenter;
 
 
 class InfoSessionCommand extends BaseCommand
@@ -34,7 +34,7 @@ class InfoSessionCommand extends BaseCommand
         return "Получить все данные из сессии";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
         $topicId = $message->messageThreadId();
         if (!$topicId)
@@ -49,7 +49,7 @@ class InfoSessionCommand extends BaseCommand
             ->sendMessage(
                 $this->config->supportGroupId,
                 (new HtmlFormatter())
-                    ->render(new SessionPresenter($session)),
+                    ->render(new ToArrayPresenter($session)),
                 $topicId
             );
 

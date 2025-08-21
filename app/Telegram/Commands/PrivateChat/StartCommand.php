@@ -4,8 +4,8 @@ namespace App\Telegram\Commands\PrivateChat;
 
 
 use App\Telegram\Contracts\TelegramClientInterface;
+use App\Telegram\Contracts\TelegramMessage;
 use App\Telegram\Formatters\ViewFormatter;
-use DefStudio\Telegraph\DTO\Message;
 use App\Telegram\Commands\BaseCommand;
 
 class StartCommand extends BaseCommand
@@ -29,7 +29,7 @@ class StartCommand extends BaseCommand
         return "Начало работы с ботом";
     }
 
-    public function execute(Message $message, ?string $parameter = null): void
+    public function execute(TelegramMessage $message, ?string $parameter = null): void
     {
 
         $this->telegramClient->sendMessage(
